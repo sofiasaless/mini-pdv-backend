@@ -1,0 +1,26 @@
+{
+  "name": "mini-pdv-backend",
+  "version": "1.0.0",
+  "description": "Express + TypeScript backend for a mini point-of-sale system",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "firebase-admin": "^14.5.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.0",
+    "eslint": "^10.11.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.70.1"
+  }
+}
