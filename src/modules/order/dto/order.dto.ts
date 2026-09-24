@@ -67,9 +67,11 @@ export class UpdateOrderDto {
   @IsOptional()
   @IsBoolean()
   isPaid?: boolean;
+}
 
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  restaurantTableRef?: string;
+export class UpdateOrderItemsDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemSnapshotDto)
+  orderItemSnapshot: OrderItemSnapshotDto[]
 }

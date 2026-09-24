@@ -1,4 +1,6 @@
 import { IsInt, IsOptional, Min } from 'class-validator';
+import { RestaurantTable } from '../restaurant-table.entity';
+import { Order } from '../../order/order.entity';
 
 export class CreateRestaurantTableDto {
   @IsInt()
@@ -17,4 +19,8 @@ export class UpdateRestaurantTableDto {
   @IsInt()
   @Min(1)
   number?: number;
+}
+
+export interface RestaurantTableResponde extends RestaurantTable {
+  order: undefined | Order;
 }
