@@ -16,10 +16,10 @@ export class RestaurantService extends BaseService<Restaurant> {
 
     const auth = await authService.createUser({
       email: payload.email,
-      password: payload.password,
+      password,
     });
 
-    const docRef = this.setup().doc();
+    const docRef = this.setup().doc(auth.uid);
     const enterpriseCreated = {
       ...data,
       id: auth.uid,

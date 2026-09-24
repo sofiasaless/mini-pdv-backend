@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { restaurantService } from './restaurant.service';
 import { validateDto } from '../../common/middlewares/validate';
 import { CreateRestaurantDto, UpdateRestaurantDto } from './dto/restaurant.dto';
+import { authMiddleware } from '../auth/middleware/auth.middleware';
 
 export const restaurantRouter = Router();
 
@@ -12,9 +13,10 @@ const asyncHandler =
   };
 
 restaurantRouter.get(
-  '/:id',
+  '/me',
+  authMiddleware(),
   asyncHandler(async (req: Request, res: Response) => {
-    const restaurant = await restaurantService.findById(req.params.id);
+    const restaurant = await restaurantService.findById(req.user!.id);
     if (!restaurant) {
       res.status(404).json({ message: 'Restaurant not found' });
       return;
@@ -33,10 +35,11 @@ restaurantRouter.post(
 );
 
 restaurantRouter.put(
-  '/:id',
+  '/',
+  authMiddleware(),
   validateDto(UpdateRestaurantDto),
   asyncHandler(async (req: Request, res: Response) => {
-    const updated = await restaurantService.update(req.params.id, req.body);
+    const updated = await restaurantService.update(req.user!.id, req.body);
     if (!updated) {
       res.status(404).json({ message: 'Restaurant not found' });
       return;
@@ -46,9 +49,10 @@ restaurantRouter.put(
 );
 
 restaurantRouter.delete(
-  '/:id',
+  '/',
+  authMiddleware(),
   asyncHandler(async (req: Request, res: Response) => {
-    const removed = await restaurantService.remove(req.params.id);
+    const removed = await restaurantService.remove(req.user!.id);
     if (!removed) {
       res.status(404).json({ message: 'Restaurant not found' });
       return;
