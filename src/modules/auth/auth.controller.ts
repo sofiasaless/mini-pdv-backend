@@ -1,6 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { authService } from './auth.service';
 import { validateDto } from '../../common/middlewares/validate';
+import { authMiddleware } from './middleware/auth.middleware';
+import { EmployeeLoginDto } from './dto/employeeLogin.dto';
 import { LoginRestaurantDto } from './dto/loginRestaurant.dto';
 
 export const authRouter = Router();
@@ -17,5 +19,15 @@ authRouter.post(
   asyncHandler(async (req: Request, res: Response) => {
     const token = await authService.login(req.body);
     res.json({ token });
+  })
+);
+
+authRouter.post(
+  '/employee-login',
+  authMiddleware(),
+  validateDto(EmployeeLoginDto),
+  asyncHandler(async (req: Request, res: Response) => {
+    const user = await authService.employeeLogin(req.body, req.user!.id);
+    res.json(user);
   })
 );

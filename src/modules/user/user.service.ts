@@ -1,8 +1,7 @@
-import { BaseService } from "../../common/base/base.service";
-import { Collections } from "../../common/enum/collections.enum";
-import { hashPassword } from "../../common/functions/bcrypt.functions";
-import { idToDocumentReference } from "../../common/functions/firebase.functions";
-import { User } from "./user.entity";
+import { BaseService } from '../../common/base/base.service';
+import { Collections } from '../../common/enum/collections.enum';
+import { hashPassword } from '../../common/functions/bcrypt.functions';
+import { User } from './user.entity';
 
 export class UserService extends BaseService<User> {
   constructor() {
@@ -16,14 +15,29 @@ export class UserService extends BaseService<User> {
       ...data,
       password: hashed,
       id: docRef.id,
-      restaurantRef: idToDocumentReference(
-        data.restaurantRef as string,
-        Collections.RESTAURANTS,
-      ),
       createdAt: new Date(),
     };
     await docRef.set(entity);
     return entity;
+  }
+
+  async findByNameAndRestaurant(
+    name: string,
+    restaurantId: string,
+  ): Promise<User | undefined> {
+    const snapshot = await this.setup()
+      .where('name', '==', name)
+      .where('restaurantRef', '==', restaurantId)
+      .limit(1)
+      .get();
+    const doc = snapshot.docs[0];
+    return doc ? this.mapDoc(doc) : undefined;
+  }
+
+  sanitize(user: User): Omit<User, 'password'> {
+    const safeUser = { ...user } as Partial<User>;
+    delete safeUser.password;
+    return safeUser as Omit<User, 'password'>;
   }
 }
 

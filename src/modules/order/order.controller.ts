@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { orderService } from './order.service';
 import { validateDto } from '../../common/middlewares/validate';
 import { CreateOrderDto, UpdateOrderDto } from './dto/order.dto';
+import { authMiddleware } from '../auth/middleware/auth.middleware';
 
 export const orderRouter = Router();
 
@@ -13,15 +14,17 @@ const asyncHandler =
 
 orderRouter.get(
   '/',
-  asyncHandler(async (_req: Request, res: Response) => {
-    res.json(await orderService.list());
+  authMiddleware(),
+  asyncHandler(async (req: Request, res: Response) => {
+    res.json(await orderService.listByRestaurant(req.user!.id));
   })
 );
 
 orderRouter.get(
   '/:id',
+  authMiddleware(),
   asyncHandler(async (req: Request, res: Response) => {
-    const order = await orderService.findById(req.params.id);
+    const order = await orderService.findByIdScoped(req.params.id, req.user!.id);
     if (!order) {
       res.status(404).json({ message: 'Order not found' });
       return;
@@ -32,8 +35,10 @@ orderRouter.get(
 
 orderRouter.post(
   '/',
+  authMiddleware(),
   validateDto(CreateOrderDto),
   asyncHandler(async (req: Request, res: Response) => {
+    req.body.restaurantRef = req.user!.id;
     const order = await orderService.create(req.body);
     res.status(201).json(order);
   })
@@ -41,9 +46,14 @@ orderRouter.post(
 
 orderRouter.put(
   '/:id',
+  authMiddleware(),
   validateDto(UpdateOrderDto),
   asyncHandler(async (req: Request, res: Response) => {
-    const updated = await orderService.update(req.params.id, req.body);
+    const updated = await orderService.updateScoped(
+      req.params.id,
+      req.user!.id,
+      req.body,
+    );
     if (!updated) {
       res.status(404).json({ message: 'Order not found' });
       return;
@@ -54,8 +64,9 @@ orderRouter.put(
 
 orderRouter.delete(
   '/:id',
+  authMiddleware(),
   asyncHandler(async (req: Request, res: Response) => {
-    const removed = await orderService.remove(req.params.id);
+    const removed = await orderService.removeScoped(req.params.id, req.user!.id);
     if (!removed) {
       res.status(404).json({ message: 'Order not found' });
       return;
