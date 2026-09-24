@@ -6,6 +6,12 @@ export class CreateRestaurantTableDto {
   number: number;
 }
 
+export class CreateManyRestaurantTableDto {
+  @IsInt()
+  @Min(1)
+  quantity: number;
+}
+
 export class UpdateRestaurantTableDto {
   @IsOptional()
   @IsInt()
