@@ -1,5 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { restaurantService } from './restaurant.service';
+import { validateDto } from '../../common/middlewares/validate';
+import { CreateRestaurantDto, UpdateRestaurantDto } from './dto/restaurant.dto';
 
 export const restaurantRouter = Router();
 
@@ -8,13 +10,6 @@ const asyncHandler =
   (req: Request, res: Response, next: NextFunction) => {
     fn(req, res, next).catch(next);
   };
-
-restaurantRouter.get(
-  '/',
-  asyncHandler(async (_req: Request, res: Response) => {
-    res.json(await restaurantService.list());
-  })
-);
 
 restaurantRouter.get(
   '/:id',
@@ -30,19 +25,16 @@ restaurantRouter.get(
 
 restaurantRouter.post(
   '/',
+  validateDto(CreateRestaurantDto),
   asyncHandler(async (req: Request, res: Response) => {
-    const { name, email, address } = req.body;
-    if (!name || !email || !address) {
-      res.status(400).json({ message: 'Required fields: name, email, address' });
-      return;
-    }
-    const restaurant = await restaurantService.create({ name, email, address });
+    const restaurant = await restaurantService.createOne(req.body);
     res.status(201).json(restaurant);
   })
 );
 
 restaurantRouter.put(
   '/:id',
+  validateDto(UpdateRestaurantDto),
   asyncHandler(async (req: Request, res: Response) => {
     const updated = await restaurantService.update(req.params.id, req.body);
     if (!updated) {

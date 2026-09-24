@@ -1,5 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { menuItemService } from './menu-item.service';
+import { validateDto } from '../../common/middlewares/validate';
+import { CreateMenuItemDto, UpdateMenuItemDto } from './dto/menu-item.dto';
 
 export const menuItemRouter = Router();
 
@@ -30,19 +32,16 @@ menuItemRouter.get(
 
 menuItemRouter.post(
   '/',
+  validateDto(CreateMenuItemDto),
   asyncHandler(async (req: Request, res: Response) => {
-    const { title, price } = req.body;
-    if (!title || typeof price !== 'number') {
-      res.status(400).json({ message: 'Required fields: title, price (number)' });
-      return;
-    }
-    const item = await menuItemService.create({ title, price });
+    const item = await menuItemService.create(req.body);
     res.status(201).json(item);
   })
 );
 
 menuItemRouter.put(
   '/:id',
+  validateDto(UpdateMenuItemDto),
   asyncHandler(async (req: Request, res: Response) => {
     const updated = await menuItemService.update(req.params.id, req.body);
     if (!updated) {

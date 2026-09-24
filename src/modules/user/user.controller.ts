@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { userService } from './user.service';
-import { UserRole } from './user.entity';
+import { validateDto } from '../../common/middlewares/validate';
+import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 
 export const userRouter = Router();
 
@@ -31,25 +32,16 @@ userRouter.get(
 
 userRouter.post(
   '/',
+  validateDto(CreateUserDto),
   asyncHandler(async (req: Request, res: Response) => {
-    const { name, password, type } = req.body;
-    if (!name || !password || !type) {
-      res.status(400).json({ message: 'Required fields: name, password, type' });
-      return;
-    }
-    if (!Object.values(UserRole).includes(type)) {
-      res.status(400).json({
-        message: `type must be one of: ${Object.values(UserRole).join(', ')}`,
-      });
-      return;
-    }
-    const user = await userService.create({ name, password, type });
+    const user = await userService.create(req.body);
     res.status(201).json(user);
   })
 );
 
 userRouter.put(
   '/:id',
+  validateDto(UpdateUserDto),
   asyncHandler(async (req: Request, res: Response) => {
     const updated = await userService.update(req.params.id, req.body);
     if (!updated) {

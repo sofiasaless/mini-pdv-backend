@@ -1,5 +1,10 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { restaurantTableService } from './restaurant-table.service';
+import { validateDto } from '../../common/middlewares/validate';
+import {
+  CreateRestaurantTableDto,
+  UpdateRestaurantTableDto,
+} from './dto/restaurant-table.dto';
 
 export const restaurantTableRouter = Router();
 
@@ -30,21 +35,16 @@ restaurantTableRouter.get(
 
 restaurantTableRouter.post(
   '/',
+  validateDto(CreateRestaurantTableDto),
   asyncHandler(async (req: Request, res: Response) => {
-    const { restaurantRef, number } = req.body;
-    if (!restaurantRef || typeof number !== 'number') {
-      res.status(400).json({
-        message: 'Required fields: restaurantRef, number (number)',
-      });
-      return;
-    }
-    const table = await restaurantTableService.create({ restaurantRef, number });
+    const table = await restaurantTableService.create(req.body);
     res.status(201).json(table);
   })
 );
 
 restaurantTableRouter.put(
   '/:id',
+  validateDto(UpdateRestaurantTableDto),
   asyncHandler(async (req: Request, res: Response) => {
     const updated = await restaurantTableService.update(req.params.id, req.body);
     if (!updated) {

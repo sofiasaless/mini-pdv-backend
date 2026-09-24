@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { orderService } from './order.service';
-import { OrderStatus } from './order.entity';
+import { validateDto } from '../../common/middlewares/validate';
+import { CreateOrderDto, UpdateOrderDto } from './dto/order.dto';
 
 export const orderRouter = Router();
 
@@ -31,38 +32,16 @@ orderRouter.get(
 
 orderRouter.post(
   '/',
+  validateDto(CreateOrderDto),
   asyncHandler(async (req: Request, res: Response) => {
-    const { orderItemSnapshot, status, isPaid, restaurantTableRef } = req.body;
-    if (
-      !Array.isArray(orderItemSnapshot) ||
-      !status ||
-      typeof isPaid !== 'boolean' ||
-      !restaurantTableRef
-    ) {
-      res.status(400).json({
-        message:
-          'Required fields: orderItemSnapshot (array), status, isPaid (boolean), restaurantTableRef',
-      });
-      return;
-    }
-    if (!Object.values(OrderStatus).includes(status)) {
-      res.status(400).json({
-        message: `status must be one of: ${Object.values(OrderStatus).join(', ')}`,
-      });
-      return;
-    }
-    const order = await orderService.create({
-      orderItemSnapshot,
-      status,
-      isPaid,
-      restaurantTableRef,
-    });
+    const order = await orderService.create(req.body);
     res.status(201).json(order);
   })
 );
 
 orderRouter.put(
   '/:id',
+  validateDto(UpdateOrderDto),
   asyncHandler(async (req: Request, res: Response) => {
     const updated = await orderService.update(req.params.id, req.body);
     if (!updated) {
