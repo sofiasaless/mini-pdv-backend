@@ -13,9 +13,6 @@ export class CreateUserDto {
   @IsEnum(UserRole)
   type: UserRole;
 
-  @IsNotEmpty()
-  @IsString()
-  restaurantRef: string;
 }
 
 export class UpdateUserDto {

@@ -5,6 +5,7 @@ import {
   CreateRestaurantTableDto,
   UpdateRestaurantTableDto,
 } from './dto/restaurant-table.dto';
+import { authMiddleware } from '../auth/middleware/auth.middleware';
 
 export const restaurantTableRouter = Router();
 
@@ -16,15 +17,20 @@ const asyncHandler =
 
 restaurantTableRouter.get(
   '/',
-  asyncHandler(async (_req: Request, res: Response) => {
-    res.json(await restaurantTableService.list());
+  authMiddleware(),
+  asyncHandler(async (req: Request, res: Response) => {
+    res.json(await restaurantTableService.listByRestaurant(req.user!.id));
   })
 );
 
 restaurantTableRouter.get(
   '/:id',
+  authMiddleware(),
   asyncHandler(async (req: Request, res: Response) => {
-    const table = await restaurantTableService.findById(req.params.id);
+    const table = await restaurantTableService.findByIdScoped(
+      req.params.id,
+      req.user!.id,
+    );
     if (!table) {
       res.status(404).json({ message: 'Restaurant table not found' });
       return;
@@ -35,8 +41,10 @@ restaurantTableRouter.get(
 
 restaurantTableRouter.post(
   '/',
+  authMiddleware(),
   validateDto(CreateRestaurantTableDto),
   asyncHandler(async (req: Request, res: Response) => {
+    req.body.restaurantRef = req.user!.id;
     const table = await restaurantTableService.create(req.body);
     res.status(201).json(table);
   })
@@ -44,9 +52,14 @@ restaurantTableRouter.post(
 
 restaurantTableRouter.put(
   '/:id',
+  authMiddleware(),
   validateDto(UpdateRestaurantTableDto),
   asyncHandler(async (req: Request, res: Response) => {
-    const updated = await restaurantTableService.update(req.params.id, req.body);
+    const updated = await restaurantTableService.updateScoped(
+      req.params.id,
+      req.user!.id,
+      req.body,
+    );
     if (!updated) {
       res.status(404).json({ message: 'Restaurant table not found' });
       return;
@@ -57,8 +70,12 @@ restaurantTableRouter.put(
 
 restaurantTableRouter.delete(
   '/:id',
+  authMiddleware(),
   asyncHandler(async (req: Request, res: Response) => {
-    const removed = await restaurantTableService.remove(req.params.id);
+    const removed = await restaurantTableService.removeScoped(
+      req.params.id,
+      req.user!.id,
+    );
     if (!removed) {
       res.status(404).json({ message: 'Restaurant table not found' });
       return;
