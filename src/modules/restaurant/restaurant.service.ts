@@ -44,16 +44,7 @@ export class RestaurantService extends BaseService<Restaurant> {
     id: string,
     data: Partial<UpdateRestaurantDto>,
   ): Promise<Restaurant | undefined> {
-    const docRef = this.setup().doc(id);
-    const snapshot = await docRef.get();
-    if (!snapshot.exists) return undefined;
-
-    if (Object.keys(data).length > 0) {
-      await docRef.update(data);
-    }
-
-    const updated = await docRef.get();
-    return this.mapDoc(updated);
+    return super.update(id, data);
   }
 }
 

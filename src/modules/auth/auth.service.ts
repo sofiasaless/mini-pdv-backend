@@ -1,6 +1,9 @@
 import { getAuth } from 'firebase-admin/auth';
 import { HttpError } from '../../common/errors/http.error';
+import { comparePassword } from '../../common/functions/bcrypt.functions';
+import { userService } from '../user/user.service';
 import { CreateEnterpriseDto } from './dto/createEnterprise.dto';
+import { EmployeeLoginDto } from './dto/employeeLogin.dto';
 import { LoginRestaurantDto } from './dto/loginRestaurant.dto';
 
 export class AuthService {
@@ -41,6 +44,20 @@ export class AuthService {
     }
 
     return data.idToken as string;
+  }
+
+  async employeeLogin(dto: EmployeeLoginDto, restaurantId: string) {
+    const user = await userService.findByNameAndRestaurant(dto.name, restaurantId);
+    if (!user) {
+      throw new HttpError(404, 'Funcionário não encontrado');
+    }
+
+    const match = await comparePassword(dto.password, user.password);
+    if (!match) {
+      throw new HttpError(401, 'Senha incorreta');
+    }
+
+    return userService.sanitize(user);
   }
 }
 

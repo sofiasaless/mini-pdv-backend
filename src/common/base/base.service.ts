@@ -21,10 +21,32 @@ export class BaseService<T extends BaseEntity> {
     return snapshot.docs.map((doc) => this.mapDoc(doc));
   }
 
+  async listByRestaurant(restaurantId: string): Promise<T[]> {
+    const snapshot = await this.setup()
+      .where('restaurantRef', '==', restaurantId)
+      .orderBy('createdAt', 'desc')
+      .get();
+    return snapshot.docs.map((doc) => this.mapDoc(doc));
+  }
+
   async findById(id: string): Promise<T | undefined> {
     const doc = await this.setup().doc(id).get();
     if (!doc.exists) return undefined;
     return this.mapDoc(doc);
+  }
+
+  async findByIdScoped(
+    id: string,
+    restaurantId: string,
+  ): Promise<T | undefined> {
+    const entity = await this.findById(id);
+    if (
+      !entity ||
+      (entity as T & { restaurantRef?: string }).restaurantRef !== restaurantId
+    ) {
+      return undefined;
+    }
+    return entity;
   }
 
   async create(data: Omit<T, 'id' | 'createdAt'>): Promise<T> {
@@ -50,12 +72,28 @@ export class BaseService<T extends BaseEntity> {
     return this.mapDoc(updated);
   }
 
+  async updateScoped(
+    id: string,
+    restaurantId: string,
+    data: Partial<Omit<T, 'id' | 'createdAt'>>,
+  ): Promise<T | undefined> {
+    const entity = await this.findByIdScoped(id, restaurantId);
+    if (!entity) return undefined;
+    return this.update(id, data);
+  }
+
   async remove(id: string): Promise<boolean> {
     const docRef = this.setup().doc(id);
     const snapshot = await docRef.get();
     if (!snapshot.exists) return false;
     await docRef.delete();
     return true;
+  }
+
+  async removeScoped(id: string, restaurantId: string): Promise<boolean> {
+    const entity = await this.findByIdScoped(id, restaurantId);
+    if (!entity) return false;
+    return this.remove(id);
   }
 
   protected mapDoc(doc: FirebaseFirestore.DocumentSnapshot): T {
