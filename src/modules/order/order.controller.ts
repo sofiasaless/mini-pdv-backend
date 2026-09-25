@@ -93,6 +93,16 @@ orderRouter.put(
   }),
 );
 
+orderRouter.put(
+  "/close/:id",
+  authMiddleware(),
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const updated = await orderService.closeOrder(id);
+    res.json(updated);
+  }),
+);
+
 orderRouter.delete(
   "/:id",
   authMiddleware(),

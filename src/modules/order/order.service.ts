@@ -5,7 +5,7 @@ import {
   CreateOrderDto,
   UpdateOrderItemsDto
 } from "./dto/order.dto";
-import { Order } from "./order.entity";
+import { Order, OrderStatus } from "./order.entity";
 
 export class OrderService extends BaseService<Order> {
   constructor() {
@@ -52,6 +52,13 @@ export class OrderService extends BaseService<Order> {
       .update({
         orderItemSnapshot: FieldValue.arrayRemove(...data.orderItemSnapshot),
       });
+  }
+
+  async closeOrder(id: string) {
+    await this.setup().doc(id).update(<Partial<Order>>{
+      isPaid: true,
+      status: OrderStatus.FREE,
+    })
   }
 
   async findByRestaurantTableId(
