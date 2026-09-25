@@ -3,6 +3,7 @@ import { restaurantTableService } from './restaurant-table.service';
 import { validateDto } from '../../common/middlewares/validate';
 import {
   CreateRestaurantTableDto,
+  CreateManyRestaurantTableDto,
   UpdateRestaurantTableDto,
 } from './dto/restaurant-table.dto';
 import { authMiddleware } from '../auth/middleware/auth.middleware';
@@ -36,6 +37,19 @@ restaurantTableRouter.get(
       return;
     }
     res.json(table);
+  })
+);
+
+restaurantTableRouter.post(
+  '/bulk',
+  authMiddleware(),
+  validateDto(CreateManyRestaurantTableDto),
+  asyncHandler(async (req: Request, res: Response) => {
+    const tables = await restaurantTableService.createMany(
+      req.body.quantity,
+      req.user!.id,
+    );
+    res.status(201).json(tables);
   })
 );
 

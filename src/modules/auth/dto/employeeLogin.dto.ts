@@ -6,6 +6,6 @@ export class EmployeeLoginDto {
   name: string;
 
   @IsString()
-  @MinLength(6)
+  @MinLength(4)
   password: string;
 }
